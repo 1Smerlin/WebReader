@@ -1,3 +1,3 @@
-# Web Reader
+# WebReader
 
 Reading extension for assisting"
