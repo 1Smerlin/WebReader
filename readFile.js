@@ -4,68 +4,24 @@ let words = [];
 let utterance;
 let readRate = 1.4;
 
-/*
-getTotalWordCount()
-getWordAtIndex(191)
-markWord(191)
-MouseClick = 189
-word = 'Baukosten'
-*/
-// Test Code
-// document.addEventListener('click', function (event) {
-//   let range, textNode, offset;
+function getBrowser() {
+  const userAgent = navigator.userAgent;
 
-//   // Moderner Browser - einschließlich IE 9+
-//   if (document.caretRangeFromPoint) {
-//     range = document.caretRangeFromPoint(event.clientX, event.clientY);
-//     textNode = range.startContainer;
-//     offset = range.startOffset;
-//   }
-//   // IE 8 und darunter
-//   else if (document.caretPositionFromPoint) {
-//     range = document.caretPositionFromPoint(event.clientX, event.clientY);
-//     textNode = range.offsetNode;
-//     offset = range.offset;
-//   }
-
-//   // Nicht auf einen Textknoten geklickt
-//   if (textNode.nodeType !== 3) {
-//     return;
-//   }
-
-//   // Finden Sie das angeklickte Wort
-//   let data = textNode.data;
-//   let start = offset;
-//   let end = offset;
-//   while (start > 0 && /\s/.test(data[start - 1]) === false) {
-//     start--;
-//   }
-//   while (end < data.length && /\s/.test(data[end]) === false) {
-//     end++;
-//   }
-
-//   let clickedWord = data.substring(start, end).trim();
-//   console.log('Clicked word:', clickedWord);
-
-//   // Holen Sie alle Textknoten und finden Sie den Index des angeklickten Worts
-//   let textNodes = getTextNodes(document.body);
-//   let wordIndex = 0;
-//   let found = false;
-//   for (let node of textNodes) {
-//     let wordsInNode = node.textContent.trim().split(/\s+/);
-//     for (let word of wordsInNode) {
-//       if (node === textNode && word === clickedWord) {
-//         console.log('Word index:', wordIndex);
-//         found = true;
-//         break;
-//       }
-//       wordIndex++;
-//     }
-//     if (found) {
-//       break;
-//     }
-//   }
-// });
+  if (userAgent.match(/firefox|fxios/i)) {
+    return "Firefox";
+  } else if (userAgent.match(/opr\//i)) {
+    return "Opera";
+  } else if (userAgent.match(/edg/i)) {
+    return "Edge";
+  } else if (userAgent.match(/chrome|chromium|crios/i)) {
+    return "Chrome";
+  } else if (userAgent.match(/safari/i)) {
+    return "Safari";
+  } else {
+    return "Unknown";
+  }
+}
+let browserName = getBrowser();
 
 function getTextFromWordIndex(index) {
   let textNodes = getTextNodes(document.body);
@@ -140,10 +96,8 @@ function markWord(wordIndex) {
   }
 }
 function unmarket() {
-  // Suchen Sie das Element mit der Klasse "mark-span"
   let spanElem = document.querySelector(".mark-span");
 
-  // Überprüfen Sie, ob das Element existiert
   if (spanElem) {
     // Ersetzen Sie die mark-Tags durch einen leeren String
     let textWithoutMark = spanElem.innerHTML.replace('<mark id="highlight">', "").replace("</mark>", "");
@@ -178,14 +132,42 @@ async function readAloud(text = "", wordstart = 0) {
   utterance = new SpeechSynthesisUtterance(text);
   // Voices
   let voices = await getVoices();
-  // window.speechSynthesis.getVoices()
-  console.log("voices");
-  console.log(voices);
-  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Hedda - German (Germany)");
-  const specificVoice = voices.find((voice) => voice.name === "Microsoft Katja - German (Germany)");
-  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Stefan - German (Germany)");
-  // const specificVoice = voices.find((voice) => voice.name === "Google Deutsch");
-  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Katja Online (Natural) - German (Germany)");
+  async function searchSettingVoice(browserName) {
+    return new Promise((resolve, reject) => {
+      if (browserName === "Firefox") {
+        browser.storage.sync.get("selectedVoice", function (result) {
+          if (result.selectedVoice) {
+            resolve(result.selectedVoice);
+          } else {
+            resolve(null);
+          }
+        });
+      } else if (browserName === "Chrome") {
+        chrome.storage.sync.get("selectedVoice", function (result) {
+          if (result.selectedVoice) {
+            resolve(result.selectedVoice);
+          } else {
+            resolve(null);
+          }
+        });
+      } else {
+        resolve(null);
+      }
+    });
+  }
+  let specificVoice;
+  let selectedVoice;
+
+  try {
+    selectedVoice = await searchSettingVoice(browserName);
+  } catch (error) {
+    console.error(error);
+  }
+  if (selectedVoice) {
+    specificVoice = voices.find((voice) => voice.name === selectedVoice);
+  } else {
+    specificVoice = voices[0];
+  }
   if (specificVoice) {
     utterance.voice = specificVoice;
   } else {
@@ -202,7 +184,7 @@ async function readAloud(text = "", wordstart = 0) {
     }
   };
 
-  synth.speak(utterance); // Startet die Sprachausgabe
+  synth.speak(utterance);
   window.addEventListener("beforeunload", function () {
     if (synth && synth.speaking) {
       synth.cancel();
@@ -312,16 +294,26 @@ function skipWords(skipCount) {
   }
 }
 
-// Keyboard
+// !Keyboard
 let altLeftPressed = false;
 let intlBackslashPressed = false;
 document.addEventListener("keydown", (event) => {
+  // check Keys
+  if (event.code === "AltLeft") {
+    altLeftPressed = true;
+  }
+  if (event.code === "IntlBackslash") {
+    intlBackslashPressed = true;
+  }
+  // key functions
   if (synth.speaking) {
     if (event.code === "Space") {
+      // stop reading
       event.preventDefault();
       pauseOrResumeSpeech();
     }
     if (event.code === "Escape") {
+      // pause reading
       if (document.getElementById("highlight") !== null) {
         MarketElem = document.getElementById("highlight");
         MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
@@ -330,6 +322,7 @@ document.addEventListener("keydown", (event) => {
       synth.cancel();
     }
     if (!altLeftPressed && event.code === "ArrowRight") {
+      // go forward
       console.log("ArrowRight");
       event.preventDefault();
       wordIndex = wordIndex + 5;
@@ -337,6 +330,7 @@ document.addEventListener("keydown", (event) => {
       readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (!altLeftPressed && event.code === "ArrowLeft") {
+      // Go back
       console.log("ArrowLeft");
       event.preventDefault();
       wordIndex = wordIndex - 5;
@@ -344,26 +338,22 @@ document.addEventListener("keydown", (event) => {
       readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (altLeftPressed && event.code === "ArrowRight") {
+      // reading faster
       event.preventDefault();
       readRate = readRate + 0.1;
       synth.cancel();
       readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (altLeftPressed && event.code === "ArrowLeft") {
+      // reading slower
       event.preventDefault();
       readRate = readRate - 0.1;
       synth.cancel();
       readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
   }
-  // Start
-  if (event.code === "AltLeft") {
-    altLeftPressed = true;
-  }
-  if (event.code === "IntlBackslash") {
-    intlBackslashPressed = true;
-  }
   if (altLeftPressed && intlBackslashPressed) {
+    // Start from begin
     if (synth.speaking) {
       if (document.getElementById("highlight") !== null) {
         MarketElem = document.getElementById("highlight");
@@ -386,14 +376,15 @@ document.addEventListener("keyup", (event) => {
 });
 document.addEventListener("mousedown", handleMouseDown);
 
-// Funktion, um den Mausklick zu behandeln
+// Function of Mouse handler
 async function handleMouseDown(event) {
   if (altLeftPressed && event.button === 0) {
+    event.preventDefault();
+    // remove the text highlight
     if (document.getElementById("highlight") !== null) {
       MarketElem = document.getElementById("highlight");
       MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
     }
-    event.preventDefault();
     synth.cancel();
     const clickedElement = event.target;
     if (clickedElement.nodeType === Node.TEXT_NODE || clickedElement.nodeType === Node.ELEMENT_NODE) {

@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "meineOption",
     title: "Meine Option",
-    contexts: ["all"]
+    contexts: ["all"],
   });
 });
 
@@ -10,7 +10,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "meineOption") {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: logMessage
+      func: logMessage,
     });
   }
 });

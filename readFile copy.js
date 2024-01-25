@@ -1,8 +1,8 @@
 const synth = window.speechSynthesis;
 let wordIndex = 0;
 let words = [];
-let utterance
-let readRate = 1.4
+let utterance;
+let readRate = 1.4;
 
 /*
 getTotalWordCount()
@@ -67,22 +67,21 @@ word = 'Baukosten'
 //   }
 // });
 
-
 function getTextFromWordIndex(index) {
   let textNodes = getTextNodes(document.body);
   let wordCount = 0;
-  let textFromIndex = '';
+  let textFromIndex = "";
   let indexReached = false; // Boolean, um zu überprüfen, ob der gewünschte Index erreicht ist
 
   for (let node of textNodes) {
     let wordsInNode = node.textContent.trim().split(/\s+/);
     if (wordCount + wordsInNode.length > index && !indexReached) {
       // Fügen Sie die Wörter ab dem gegebenen Index zum Text hinzu
-      textFromIndex += wordsInNode.slice(index - wordCount).join(' ');
+      textFromIndex += wordsInNode.slice(index - wordCount).join(" ");
       indexReached = true; // Setzen Sie indexReached auf true, da der Index erreicht wurde
     } else if (indexReached) {
       // Fügen Sie alle Wörter des aktuellen Knotens zum Text hinzu, wenn der Wortindex bereits erreicht wurde
-      textFromIndex += ' ' + wordsInNode.join(' ');
+      textFromIndex += " " + wordsInNode.join(" ");
     }
     wordCount += wordsInNode.length;
   }
@@ -113,8 +112,8 @@ function getWordAtIndex(index) {
 // document.getElementsByClassName("mark-span")
 function markWord(wordIndex) {
   if (document.getElementById("highlight") !== null) {
-    MarketElem = document.getElementById("highlight")
-    MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText)
+    MarketElem = document.getElementById("highlight");
+    MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
   }
   let textNodes = getTextNodes(document.body);
   let wordCount = 0;
@@ -127,12 +126,12 @@ function markWord(wordIndex) {
         let afterWord = wordsInNode.slice(index + 1).join(" ");
         let markedWord = `<mark id="highlight">${word}</mark>`;
         let newHTML = `${beforeWord} ${markedWord} ${afterWord}`;
-        let span = document.createElement('span');
-        span.classList.add("mark-span")
+        let span = document.createElement("span");
+        span.classList.add("mark-span");
         span.innerHTML = newHTML;
         node.parentNode.replaceChild(span, node);
 
-        console.log(node)
+        console.log(node);
         return;
       }
       wordCount++;
@@ -147,9 +146,7 @@ function unmarket() {
   // Überprüfen Sie, ob das Element existiert
   if (spanElem) {
     // Ersetzen Sie die mark-Tags durch einen leeren String
-    let textWithoutMark = spanElem.innerHTML
-      .replace('<mark id="highlight">', "")
-      .replace("</mark>", "");
+    let textWithoutMark = spanElem.innerHTML.replace('<mark id="highlight">', "").replace("</mark>", "");
 
     // Erstellen Sie einen neuen Textknoten mit dem bereinigten Text
     let textNode = document.createTextNode(textWithoutMark);
@@ -160,7 +157,6 @@ function unmarket() {
     console.log("Es gibt kein Element mit der Klasse 'mark-span'.");
   }
 }
-
 
 // Read aloud
 function getTextNodes(element) {
@@ -178,11 +174,18 @@ async function readAloud(text = "", wordstart = 0) {
   if (!text) {
     text = getSkippedContent(0);
   }
-  wordIndex = wordstart
+  wordIndex = wordstart;
   utterance = new SpeechSynthesisUtterance(text);
   // Voices
-  let voices = await getVoices()
-  const specificVoice = voices.find(voice => voice.name === 'Microsoft Amala Online (Natural) - German (Germany)');
+  let voices = await getVoices();
+  // window.speechSynthesis.getVoices()
+  console.log("voices");
+  console.log(voices);
+  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Hedda - German (Germany)");
+  const specificVoice = voices.find((voice) => voice.name === "Microsoft Katja - German (Germany)");
+  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Stefan - German (Germany)");
+  // const specificVoice = voices.find((voice) => voice.name === "Google Deutsch");
+  // const specificVoice = voices.find((voice) => voice.name === "Microsoft Katja Online (Natural) - German (Germany)");
   if (specificVoice) {
     utterance.voice = specificVoice;
   } else {
@@ -193,14 +196,14 @@ async function readAloud(text = "", wordstart = 0) {
   utterance.lang = "de-DE";
   utterance.onboundary = (event) => {
     if (event.name === "word") {
-      console.log(wordIndex)
+      console.log(wordIndex);
       markWord(wordIndex);
       wordIndex++;
     }
-  }
+  };
 
   synth.speak(utterance); // Startet die Sprachausgabe
-  window.addEventListener('beforeunload', function () {
+  window.addEventListener("beforeunload", function () {
     if (synth && synth.speaking) {
       synth.cancel();
     }
@@ -221,13 +224,18 @@ function getVoices() {
   });
 }
 
-
 function getWordIndexFromElement(element) {
   const allTextNodes = getTextNodes(document.body);
   const clickedTextNodes = getTextNodes(element);
 
-  const allWords = allTextNodes.map(node => node.textContent.trim()).join(' ').split(/\s+/);
-  const clickedWords = clickedTextNodes.map(node => node.textContent.trim()).join(' ').split(/\s+/);
+  const allWords = allTextNodes
+    .map((node) => node.textContent.trim())
+    .join(" ")
+    .split(/\s+/);
+  const clickedWords = clickedTextNodes
+    .map((node) => node.textContent.trim())
+    .join(" ")
+    .split(/\s+/);
 
   let wordCount = 0;
 
@@ -245,8 +253,14 @@ async function startReadingFromElement(element) {
   const allTextNodes = getTextNodes(document.body);
   const clickedTextNodes = getTextNodes(element);
 
-  const allWords = allTextNodes.map(node => node.textContent.trim()).join(' ').split(/\s+/);
-  const clickedWords = clickedTextNodes.map(node => node.textContent.trim()).join(' ').split(/\s+/);
+  const allWords = allTextNodes
+    .map((node) => node.textContent.trim())
+    .join(" ")
+    .split(/\s+/);
+  const clickedWords = clickedTextNodes
+    .map((node) => node.textContent.trim())
+    .join(" ")
+    .split(/\s+/);
 
   let wordCount = 0;
 
@@ -258,7 +272,7 @@ async function startReadingFromElement(element) {
   }
 
   wordIndex = wordCount;
-  const textToRead = allWords.slice(wordIndex).join(' ');
+  const textToRead = allWords.slice(wordIndex).join(" ");
 
   if (synth.speaking) {
     synth.cancel();
@@ -278,7 +292,7 @@ function pauseOrResumeSpeech() {
 }
 function getSkippedContent(skipCount) {
   const textNodes = getTextNodes(document.body);
-  const pageContent = textNodes.map(node => node.textContent.trim()).join(" ");
+  const pageContent = textNodes.map((node) => node.textContent.trim()).join(" ");
   words = pageContent.split(/\s+/);
   if (wordIndex + skipCount >= 0 && wordIndex + skipCount < words.length) {
     wordIndex += skipCount;
@@ -298,13 +312,10 @@ function skipWords(skipCount) {
   }
 }
 
-
-
-
 // Keyboard
 let altLeftPressed = false;
 let intlBackslashPressed = false;
-document.addEventListener('keydown', (event) => {
+document.addEventListener("keydown", (event) => {
   if (synth.speaking) {
     if (event.code === "Space") {
       event.preventDefault();
@@ -312,51 +323,51 @@ document.addEventListener('keydown', (event) => {
     }
     if (event.code === "Escape") {
       if (document.getElementById("highlight") !== null) {
-        MarketElem = document.getElementById("highlight")
-        MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText)
+        MarketElem = document.getElementById("highlight");
+        MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
       }
       event.preventDefault();
       synth.cancel();
     }
     if (!altLeftPressed && event.code === "ArrowRight") {
-      console.log("ArrowRight")
+      console.log("ArrowRight");
       event.preventDefault();
-      wordIndex = wordIndex + 5
-      synth.cancel()
-      readAloud(getTextFromWordIndex(wordIndex), wordIndex)
+      wordIndex = wordIndex + 5;
+      synth.cancel();
+      readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (!altLeftPressed && event.code === "ArrowLeft") {
-      console.log("ArrowLeft")
+      console.log("ArrowLeft");
       event.preventDefault();
-      wordIndex = wordIndex - 5
-      synth.cancel()
-      readAloud(getTextFromWordIndex(wordIndex), wordIndex)
+      wordIndex = wordIndex - 5;
+      synth.cancel();
+      readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (altLeftPressed && event.code === "ArrowRight") {
       event.preventDefault();
       readRate = readRate + 0.1;
-      synth.cancel()
-      readAloud(getTextFromWordIndex(wordIndex), wordIndex)
+      synth.cancel();
+      readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
     if (altLeftPressed && event.code === "ArrowLeft") {
       event.preventDefault();
       readRate = readRate - 0.1;
-      synth.cancel()
-      readAloud(getTextFromWordIndex(wordIndex), wordIndex)
+      synth.cancel();
+      readAloud(getTextFromWordIndex(wordIndex), wordIndex);
     }
   }
   // Start
-  if (event.code === 'AltLeft') {
+  if (event.code === "AltLeft") {
     altLeftPressed = true;
   }
-  if (event.code === 'IntlBackslash') {
+  if (event.code === "IntlBackslash") {
     intlBackslashPressed = true;
   }
   if (altLeftPressed && intlBackslashPressed) {
     if (synth.speaking) {
       if (document.getElementById("highlight") !== null) {
-        MarketElem = document.getElementById("highlight")
-        MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText)
+        MarketElem = document.getElementById("highlight");
+        MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
       }
       synth.cancel();
     }
@@ -365,22 +376,22 @@ document.addEventListener('keydown', (event) => {
     readAloud(skippedContent);
   }
 });
-document.addEventListener('keyup', (event) => {
-  if (event.code === 'AltLeft') {
+document.addEventListener("keyup", (event) => {
+  if (event.code === "AltLeft") {
     altLeftPressed = false;
   }
-  if (event.code === 'IntlBackslash') {
+  if (event.code === "IntlBackslash") {
     intlBackslashPressed = false;
   }
 });
-document.addEventListener('mousedown', handleMouseDown);
+document.addEventListener("mousedown", handleMouseDown);
 
 // Funktion, um den Mausklick zu behandeln
 async function handleMouseDown(event) {
   if (altLeftPressed && event.button === 0) {
     if (document.getElementById("highlight") !== null) {
-      MarketElem = document.getElementById("highlight")
-      MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText)
+      MarketElem = document.getElementById("highlight");
+      MarketElem.parentElement.innerText = unmarket(MarketElem.parentElement.innerText);
     }
     event.preventDefault();
     synth.cancel();
@@ -418,7 +429,7 @@ async function handleMouseDown(event) {
       }
 
       let clickedWord = data.substring(start, end).trim();
-      console.log('Clicked word:', clickedWord);
+      console.log("Clicked word:", clickedWord);
 
       // Holen Sie alle Textknoten und finden Sie den Index des angeklickten Worts
       let textNodes = getTextNodes(document.body);
@@ -431,8 +442,8 @@ async function handleMouseDown(event) {
             if (synth.speaking) {
               synth.cancel();
             }
-            readAloud(getTextFromWordIndex(wordIndex), wordIndex)
-            console.log('Word index:', wordIndex);
+            readAloud(getTextFromWordIndex(wordIndex), wordIndex);
+            console.log("Word index:", wordIndex);
             found = true;
             break;
           }
@@ -445,5 +456,3 @@ async function handleMouseDown(event) {
     }
   }
 }
-
-

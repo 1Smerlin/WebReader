@@ -1,0 +1,16 @@
+body {
+  background-color: gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2rem;
+}
+
+h1 {
+  text-align: center;
+  font-size: 5rem;
+}
+#voiceSelect {
+  font-size: 1.5rem;
+  border-radius: 5%;
+}
