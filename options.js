@@ -2,6 +2,8 @@ console.log("Hallo Bambi");
 
 // Stimmen laden und im Dropdown anzeigen
 let voices = window.speechSynthesis.getVoices();
+let voiceSelect = document.getElementById("voiceSelect");
+let DeleteVoice = document.getElementById("DeleteVoice");
 
 function loadVoices() {
   let voices = window.speechSynthesis.getVoices();
@@ -11,7 +13,7 @@ function loadVoices() {
     var option = document.createElement("option");
     option.value = voice.name;
     option.innerHTML = voice.name;
-    document.getElementById("voiceSelect").appendChild(option);
+    voiceSelect.appendChild(option);
   });
 }
 
@@ -43,13 +45,14 @@ switch (browserName) {
     window.speechSynthesis.onvoiceschanged = loadVoices;
     break;
   case "Edge":
+    window.speechSynthesis.onvoiceschanged = loadVoices;
     break;
   default:
     break;
 }
 // Ausgewählte Stimme speichern
 
-document.getElementById("voiceSelect").addEventListener("change", async function () {
+voiceSelect.addEventListener("change", async function () {
   var selectedVoice = this.value;
   try {
     switch (browserName) {
@@ -61,6 +64,10 @@ document.getElementById("voiceSelect").addEventListener("change", async function
         await chrome.storage.sync.set({ selectedVoice: selectedVoice });
         console.log("Die Stimme wurde gespeichert.");
         break;
+      case "Edge":
+        await chrome.storage.sync.set({ selectedVoice: selectedVoice });
+        console.log("Die Stimme wurde gespeichert.");
+        break;
       // Füge Fallunterscheidungen für andere Browser hinzu, falls nötig
     }
   } catch (error) {
@@ -68,45 +75,81 @@ document.getElementById("voiceSelect").addEventListener("change", async function
   }
 });
 
-function getStorage() {
+async function getStorage() {
+  let result;
   switch (browserName) {
     case "Firefox":
+      console.log(browserName);
       console.log(browser);
-      console.log(browser.storage);
-      return browser.storage;
+      result = await browser.storage.sync.get("selectedVoice");
+      console.log("Wert von selectedVoice:", result.selectedVoice);
+      return result;
     case "Chrome":
+      console.log(browserName);
       console.log(chrome);
-      console.log(chrome.storage);
-      return chrome.storage;
+      result = await chrome.storage.sync.get("selectedVoice");
+      console.log("Wert von selectedVoice:", result.selectedVoice);
+      return result;
     case "Edge":
-      break;
+      console.log(browserName);
+      console.log(chrome);
+      result = await chrome.storage.sync.get("selectedVoice");
+      console.log("Wert von selectedVoice:", result.selectedVoice);
+      return result;
     default:
+      console.log(browserName);
+      console.log("Fehler beim Brovsernamen");
       break;
   }
-  // if (typeof browser !== "undefined" && browser.storage) {
-  // } else if (typeof chrome !== "undefined" && chrome.storage) {
-  // } else {
-  //   throw new Error("Storage API not found.");
-  // }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const storage = getStorage();
-  console.log(storage.sync.hasOwnProperty("selectedVoice"));
-  storage.sync.get("selectedVoice", function (data) {
-    if (data) {
-      console.log("data.selectedVoice");
-      console.log(data.selectedVoice);
-      document.getElementById("voiceSelect").value = data.selectedVoice;
-      // if (data.selectedVoice) {
-      // } else {
-      // }
-    } else {
-      // var option = document.createElement("option");
-      // option.value = "undefined";
-      // option.innerHTML = "undefined";
-      // document.getElementById("voiceSelect").appendChild(option);
-      document.getElementById("voiceSelect").value = "defaultVoiceValue";
-    }
-  });
+document.addEventListener("DOMContentLoaded", async function () {
+  try {
+    // Verwende direkt chrome.storage.sync.get, um den Wert von selectedVoice zu erhalten
+    const result = await getStorage();
+    const selectedVoice = result.selectedVoice || "defaultVoiceValue"; // Verwende den gespeicherten Wert oder einen Standardwert
+    console.log("Wert von selectedVoice:", selectedVoice);
+
+    // Setze den Wert im Dropdown-Menü
+    voiceSelect.value = "";
+  } catch (error) {
+    console.error("Ein Fehler ist aufgetreten beim Laden der Stimme:", error);
+  }
+});
+
+// Delede Voice
+DeleteVoice.addEventListener("click", function () {
+  switch (browserName) {
+    case "Chrome":
+      chrome.storage.sync.remove("selectedVoice", function () {
+        if (chrome.runtime.lastError) {
+          console.error("Fehler beim Entfernen des Wertes:", chrome.runtime.lastError);
+        } else {
+          console.log("Wert wurde erfolgreich entfernt.");
+          voiceSelect.value = "";
+        }
+      });
+      break;
+    case "Edge":
+      chrome.storage.sync.remove("selectedVoice", function () {
+        if (chrome.runtime.lastError) {
+          console.error("Fehler beim Entfernen des Wertes:", chrome.runtime.lastError);
+        } else {
+          console.log("Wert wurde erfolgreich entfernt.");
+          voiceSelect.value = "";
+        }
+      });
+      break;
+    case "Firefox":
+      browser.storage.sync.remove("selectedVoice").then(
+        () => {
+          console.log("Wert wurde erfolgreich entfernt.");
+        },
+        (error) => {
+          console.error("Fehler beim Entfernen des Wertes:", error);
+          voiceSelect.value = "";
+        }
+      );
+      break;
+  }
 });

@@ -135,7 +135,7 @@ async function readAloud(text = "", wordstart = 0) {
   async function searchSettingVoice(browserName) {
     return new Promise((resolve, reject) => {
       if (browserName === "Firefox") {
-        browser.storage.sync.get("selectedVoice", function (result) {
+        browser.storage.sync.get("selectedVoice", async function (result) {
           if (result.selectedVoice) {
             resolve(result.selectedVoice);
           } else {
@@ -143,7 +143,15 @@ async function readAloud(text = "", wordstart = 0) {
           }
         });
       } else if (browserName === "Chrome") {
-        chrome.storage.sync.get("selectedVoice", function (result) {
+        chrome.storage.sync.get("selectedVoice", async function (result) {
+          if (result.selectedVoice) {
+            resolve(result.selectedVoice);
+          } else {
+            resolve(null);
+          }
+        });
+      } else if (browserName === "Edge") {
+        chrome.storage.sync.get("selectedVoice", async function (result) {
           if (result.selectedVoice) {
             resolve(result.selectedVoice);
           } else {
@@ -163,6 +171,8 @@ async function readAloud(text = "", wordstart = 0) {
   } catch (error) {
     console.error(error);
   }
+  console.log("!!!!! selectedVoice !!!!!");
+  console.log(selectedVoice);
   if (selectedVoice) {
     specificVoice = voices.find((voice) => voice.name === selectedVoice);
   } else {

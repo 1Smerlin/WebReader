@@ -1,11 +1,17 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Web Reader",
   "description": "Reading extension for assisting",
   "version": "1.0",
-  "permissions": ["contextMenus", "activeTab", "scripting"],
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "webreader@example.com"
+    }
+  },
   "background": {
-    "service_worker": "background.js"
+    // "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "icons": {
     "16": "images/icon-16.png",

@@ -3,9 +3,9 @@
   "name": "Web Reader",
   "description": "Reading extension for assisting",
   "version": "1.0",
-  "permissions": ["contextMenus", "activeTab", "scripting"],
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "icons": {
     "16": "images/icon-16.png",
